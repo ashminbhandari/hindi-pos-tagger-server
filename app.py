@@ -2,6 +2,8 @@ import codecs
 from decimal import Decimal
 from flask import Flask, request, jsonify
 from flask_cors import CORS, cross_origin
+import fcntl
+import json 
 
 def parse_traindata():
     fin = 'hmmmodel.txt'
@@ -157,6 +159,68 @@ def pos_tagger():
     tag_list, transition_model, emission_model, tag_count, word_set = parse_traindata()
     sentence = data.get('sentence') 
     result = viterbi_algorithm(sentence, tag_list, transition_model, emission_model, tag_count, word_set)
-    result_array = result.split()
-    result_with_meanings = ", ".join([tag_to_meaning.get(tag, tag) for tag in result_array])
-    return jsonify(sentence=sentence, result=result_with_meanings)
+    try:
+        with open("sentences.txt", "a", encoding="utf-8") as sentences_file, open("results.txt", "a", encoding="utf-8") as results_file:
+            # Acquire a lock on both files
+            fcntl.flock(sentences_file, fcntl.LOCK_EX)
+            fcntl.flock(results_file, fcntl.LOCK_EX)
+        
+            # Write to the first file with a newline character
+            sentences_file.write(sentence + '\n')
+        
+            # Write to the second file with a newline character
+            results_file.write(result + '\n')
+        
+            # Release the locks on both files
+            fcntl.flock(sentences_file, fcntl.LOCK_UN)
+            fcntl.flock(results_file, fcntl.LOCK_UN)
+        
+        return jsonify(sentence=sentence, result=result)
+    except Exception as e:
+        return jsonify(error=str(e))
+
+@app.route('/get_sentences', methods=['GET'])
+def get_sentences():
+    sentences = []
+    results = []
+    
+    # Read sentences from the sentences file
+    with open("sentences.txt", "r") as sentences_file:
+        sentences = sentences_file.readlines()
+    
+    # Read results from the results file
+    with open("results.txt", "r") as results_file:
+        results = results_file.readlines()
+    
+    # Strip newline characters from the strings
+    sentences = [sentence.strip() for sentence in sentences]
+    results = [result.strip() for result in results]
+    
+    # Return the arrays as JSON
+    return jsonify({'sentences': sentences, 'results': results})
+
+@app.route('/pos_edit', methods=['POST'])
+def pos_edit():
+    data = request.get_json() 
+    edits = data['edits']
+
+    # Read the existing JSON file
+    with open('edits.json', 'r') as file:
+        data = json.load(file)
+
+    # Update the existing data with the new data
+    for key, value in edits.items():
+        print (key, value)
+        if key in data:
+            data[key].append(value)
+        else:   
+            data[key] = [value]
+    
+    print(edits)
+
+    # Write the updated data back to the JSON file
+    with open('edits.json', 'w') as file:
+        json.dump(data, file, indent=4)
+
+    return data
+
