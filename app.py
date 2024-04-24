@@ -150,7 +150,7 @@ app = Flask(__name__)
 cors = CORS(app)
 app.config['CORS_HEADERS'] = 'Content-Type'
 
-@app.route("/pos_tagger")
+@app.route("/pos_tagger", methods=['POST'])
 @cross_origin()
 def pos_tagger():
     data = request.get_json() 
