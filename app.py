@@ -1,6 +1,7 @@
 import codecs
 from decimal import Decimal
 from flask import Flask, request, jsonify
+from flask_cors import CORS, cross_origin
 
 def parse_traindata():
     fin = 'static/hmmmodel.txt'
@@ -146,7 +147,11 @@ tag_to_meaning = {
 
 app = Flask(__name__)
 
+cors = CORS(app)
+app.config['CORS_HEADERS'] = 'Content-Type'
+
 @app.route("/pos_tagger")
+@cross_origin()
 def pos_tagger():
     data = request.get_json() 
     tag_list, transition_model, emission_model, tag_count, word_set = parse_traindata()
