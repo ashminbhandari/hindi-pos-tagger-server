@@ -4,7 +4,7 @@ from flask import Flask, request, jsonify
 from flask_cors import CORS, cross_origin
 
 def parse_traindata():
-    fin = 'static/hmmmodel.txt'
+    fin = 'hmmmodel.txt'
     transition_prob = {}
     emission_prob = {}
     tag_list = []
@@ -129,7 +129,7 @@ tag_to_meaning = {
     'JJ': 'Adjective',
     'DEM': 'Determiner / Demonstrative',
     'INJ': 'Interjection',
-    'INTF': 'Adverb (intensifier)',
+    'INTF': 'Adverb (Intensifier)',
     'NEG': 'Negation',
     'NST': 'Spatial Nouns',
     'RP': 'Particles',
@@ -137,7 +137,7 @@ tag_to_meaning = {
     'RB': 'Adverb',
     'RDP': 'Reduplications',
     'AF': 'Quantifiers',
-    'VAUX': 'Auxiliary verb',
+    'VAUX': 'Auxiliary Verb',
     'SYM': 'Symbol',
     'PSP': 'Postposition',
     'CC': 'Coordination Conjunction',
